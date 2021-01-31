@@ -6,6 +6,7 @@ public class Character : MonoBehaviour
 {
     public float gravity = -9.81f;
     public float speed = 10.0f;
+    public Projectile projectilePrefab;
 
     CharacterController controller;
 
@@ -22,5 +23,11 @@ public class Character : MonoBehaviour
 
         Controller.Move(transform.TransformDirection(movement) * Time.deltaTime);
         Controller.transform.Rotate(Vector3.up, rotation);
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            var projectile = Instantiate<Projectile>(projectilePrefab, transform.position + transform.forward, transform.rotation);
+            projectile.Shot();
+        }
     }
 }
