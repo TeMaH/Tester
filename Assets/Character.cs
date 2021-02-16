@@ -4,23 +4,38 @@ using UnityEngine;
 
 public class Character : MonoBehaviour
 {
-    public float gravity = -9.81f;
-    public float speed = 10.0f;
+    public float movementSpeed = 10.0f;
+    public float rotationSpeed = 0.2f;
 
     CharacterController controller;
+    Camera characterCamera;
+    float rotationAngle = 0.0f;
 
-    public CharacterController Controller { get { return controller = controller ?? GetComponent<CharacterController>(); } }
+    public CharacterController Controller 
+    {
+        get { return controller = controller ?? GetComponent<CharacterController>(); } 
+    }
+    public Camera CharacterCamera 
+    { 
+        get { return characterCamera = characterCamera ?? FindObjectOfType<Camera>(); } 
+    }
 
     void Update()
     {
         float vertical = Input.GetAxis("Vertical");
         float horizontal = Input.GetAxis("Horizontal");
 
-        float rotation = Input.GetAxis("Mouse X");
+        Vector3 movement = new Vector3(horizontal, 0.0f, vertical);
+        Vector3 rotatedMovement = Quaternion.Euler(0.0f, CharacterCamera.transform.rotation.eulerAngles.y, 0.0f) * movement.normalized;
 
-        Vector3 movement = new Vector3(horizontal * speed, gravity, vertical * speed);
+        Controller.Move(rotatedMovement * movementSpeed * Time.deltaTime);
 
-        Controller.Move(transform.TransformDirection(movement) * Time.deltaTime);
-        Controller.transform.Rotate(Vector3.up, rotation);
+        if (rotatedMovement.sqrMagnitude > 0.0f)
+        {
+            rotationAngle = Mathf.Atan2(rotatedMovement.x, rotatedMovement.z) * Mathf.Rad2Deg;
+        }
+        Quaternion currentRotation = Controller.transform.rotation;
+        Quaternion targetRotation = Quaternion.Euler(0.0f, rotationAngle, 0.0f);
+        Controller.transform.rotation = Quaternion.Lerp(currentRotation, targetRotation, rotationSpeed);
     }
 }
